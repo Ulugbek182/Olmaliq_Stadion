@@ -9,32 +9,33 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        /* (Аввалги дизайн услублари шу ерда қолади...) */
-        :root { --primary-green: #2ecc71; --danger-red: #e74c3c; --admin-gold: #f1c40f; --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); }
+        :root { --primary-green: #2ecc71; --danger-red: #e74c3c; --admin-gold: #f1c40f; --glass-border: rgba(255, 255, 255, 0.2); }
         body { font-family: 'Poppins', sans-serif; margin: 0; background: url('https://integralspor.com/assets/filemanager/200c60217abc6599765d48ca523220b3.jpg') no-repeat center center fixed; background-size: cover; color: #fff; display: flex; justify-content: center; min-height: 100vh; }
-        .container { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); width: 95%; max-width: 1100px; margin: 30px auto; border-radius: 25px; padding: 40px; border: 1px solid var(--glass-border); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid var(--glass-border); padding-bottom: 20px; }
-        h2 { font-weight: 800; font-size: 32px; background: linear-gradient(to right, #2ecc71, #f1c40f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin: 0; }
-        .admin-badge { background: var(--admin-gold); color: #000; padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; display: none; margin-bottom: 10px; box-shadow: 0 0 15px var(--admin-gold); }
-        .controls { display: flex; gap: 20px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; }
-        select, input, .login-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 16px; outline: none; }
-        .login-btn { background: var(--primary-green); font-weight: 600; cursor: pointer; border: none; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-        .slot { padding: 25px 15px; border-radius: 20px; text-align: center; transition: 0.3s; border: 1px solid transparent; }
-        .free { background: rgba(46, 204, 113, 0.15); border-color: rgba(46, 204, 113, 0.3); cursor: pointer; }
-        .booked { background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3); }
+        .container { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); width: 95%; max-width: 1100px; margin: 20px auto; border-radius: 25px; padding: 30px; border: 1px solid var(--glass-border); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 20px; }
+        h2 { font-weight: 800; font-size: clamp(20px, 5vw, 32px); background: linear-gradient(to right, #2ecc71, #f1c40f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin: 0; }
+        .admin-badge { background: var(--admin-gold); color: #000; padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; display: none; margin-bottom: 10px; }
+        .controls { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        select, input, .login-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); color: #fff; padding: 12px; border-radius: 12px; font-size: 16px; outline: none; }
+        .login-btn { background: var(--primary-green); font-weight: 600; cursor: pointer; border: none; min-width: 120px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .slot { padding: 25px 10px; border-radius: 15px; text-align: center; transition: 0.3s; border: 1px solid transparent; cursor: pointer; }
+        .free { background: rgba(46, 204, 113, 0.15); border-color: rgba(46, 204, 113, 0.3); }
+        .booked { background: rgba(231, 76, 60, 0.3); border-color: rgba(231, 76, 60, 0.5); }
         .time { font-size: 24px; font-weight: 800; display: block; }
-        .info { font-size: 13px; margin-top: 10px; color: var(--admin-gold); background: rgba(0,0,0,0.4); border-radius: 5px; padding: 3px; }
-        .footer-note { text-align: center; margin-top: 50px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; }
+        .status { font-size: 11px; letter-spacing: 1.5px; opacity: 0.9; text-transform: uppercase; }
+        .info { font-size: 12px; margin-top: 10px; color: var(--admin-gold); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 5px; font-weight: 500; }
+        .footer-note { text-align: center; margin-top: 40px; padding: 25px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px dashed var(--glass-border); }
+        @media (max-width: 500px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
-<body class="user-mode" id="bodyBody">
+<body id="bodyBody">
 
     <div class="container">
         <header>
-            <span id="adminBadge" class="admin-badge">⚡ ADMIN PANEL ON</span>
+            <div id="adminBadge" class="admin-badge">⚡ ADMIN REJIM YOQILGAN</div>
             <h2>⚽ OLMALIQ STADION</h2>
-            <p style="opacity: 0.6; font-size: 12px;">ОНЛАЙН БРОН ҚИЛИШ ТИЗИМИ</p>
+            <p style="opacity: 0.7; font-size: 12px; letter-spacing: 1px; margin-top: 5px;">ЭНГ ЗЎР СТАДИОНЛАРДА ЎЗ ЎРНИНГИЗНИ БАНД ҚИЛИНГ</p>
         </header>
 
         <div class="controls">
@@ -48,15 +49,17 @@
         <div class="grid" id="scheduleGrid"></div>
 
         <div class="footer-note">
-            📢 БРОН ҚИЛИШ УЧУН: <b>+998 93 793 11 55</b>
+            <span style="font-size: 14px; opacity: 0.8;">📢 БРОН ҚИЛИШ УЧУН ТЕЛЕФОН:</span><br>
+            <b style="font-size: 22px; color: var(--primary-green); letter-spacing: 1px;">+998 93 793 11 55</b>
         </div>
     </div>
 
     <script>
-        // 1. Firebase созламалари
+        // Firebase созламалари - Сизнинг URL манзилингиз қўйилди
         const firebaseConfig = {
-            databaseURL: "СИЗНИНГ_FIREBASE_URL_МАНЗИЛИНГИЗ" // 👈 ШУ ЕРГА НУСХАЛАНГАН URL'ни ҚЎЙИНГ
+            databaseURL: "https://olmaliq-stadion-default-rtdb.firebaseio.com/" 
         };
+        
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -70,14 +73,12 @@
                 let pass = prompt("Админ паролини киритинг:");
                 if (pass === ADMIN_PASSWORD) {
                     isAdmin = true;
-                    document.getElementById('bodyBody').classList.add("admin-mode");
                     document.getElementById('adminBadge').style.display = "inline-block";
                     document.getElementById('authBtn').innerText = "🚪 Чиқиш";
-                    alert("Админ бўлиб кирдингиз!");
+                    alert("Хуш келибсиз, Админ!");
                 } else { alert("Парол хато!"); }
             } else {
                 isAdmin = false;
-                document.getElementById('bodyBody').classList.remove("admin-mode");
                 document.getElementById('adminBadge').style.display = "none";
                 document.getElementById('authBtn').innerText = "🔑 Админ";
             }
@@ -88,55 +89,40 @@
             const stadium = document.getElementById('stadiumSelect').value;
             const date = document.getElementById('dateSelect').value;
             const grid = document.getElementById('scheduleGrid');
-            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Юкланмоқда...</p>';
+            if (!date) return;
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; opacity:0.5;">Юкланмоқда...</p>';
 
-            // Firebase'дан маълумотларни реал вақтда олиш
+            // Firebase'дан реал вақтда маълумот олиш
             database.ref(`bookings/${stadium}/${date}`).on('value', (snapshot) => {
                 grid.innerHTML = '';
-                const bookings = snapshot.val() || {};
-
+                const data = snapshot.val() || {};
                 for (let i = 1; i <= 24; i++) {
                     let time = i + ":00";
-                    let bookingInfo = bookings[time.replace(':', '_')];
+                    let key = time.replace(':', '_');
+                    let info = data[key];
 
                     let div = document.createElement('div');
-                    div.className = 'slot ' + (bookingInfo ? 'booked' : 'free');
+                    div.className = 'slot ' + (info ? 'booked' : 'free');
+                    div.innerHTML = `<span class="time">${time}</span>
+                                     <span class="status">${info ? '● БАНД' : '○ БЎШ'}</span>
+                                     ${info ? `<div class="info">👤 ${isAdmin ? info : '---'}</div>` : ''}`;
 
-                    let html = `<span class="time">${time}</span>`;
-                    html += `<span class="status">${bookingInfo ? '● БАНД' : '○ БЎШ'}</span>`;
-                    
-                    if (bookingInfo) {
-                        let displayInfo = isAdmin ? bookingInfo : "---";
-                        html += `<div class="info">👤 ${displayInfo}</div>`;
-                    }
-
-                    div.innerHTML = html;
                     div.onclick = () => {
                         if (isAdmin) {
-                            if (bookingInfo) cancelBooking(stadium, date, time);
-                            else makeBooking(stadium, date, time);
-                        } else if (!bookingInfo) {
-                            alert("Брон қилиш учун: +998 93 793 11 55");
+                            if (info) {
+                                if(confirm(time + " бронни бекор қиламизми?")) database.ref(`bookings/${stadium}/${date}/${key}`).remove();
+                            } else {
+                                let name = prompt(time + " га кимнинг исмини ёзамиз?");
+                                if(name) database.ref(`bookings/${stadium}/${date}/${key}`).set(name);
+                            }
+                        } else if (!info) {
+                            alert("Ушбу вақт бўш. Брон қилиш учун: +998 93 793 11 55");
                         }
                     };
                     grid.appendChild(div);
                 }
             });
         }
-
-        function makeBooking(stadium, date, time) {
-            let info = prompt(`${time} га кимга брон қиламиз?`);
-            if (info && info.trim() !== "") {
-                database.ref(`bookings/${stadium}/${date}/${time.replace(':', '_')}`).set(info);
-            }
-        }
-
-        function cancelBooking(stadium, date, time) {
-            if (confirm(`${time} даги бронни ўчирамизми?`)) {
-                database.ref(`bookings/${stadium}/${date}/${time.replace(':', '_')}`).remove();
-            }
-        }
-
         loadSchedule();
     </script>
 </body>
