@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚽ OLMALIQ STADION - Live Booking</title>
+    <title>⚽ OLMALIQ STADION - Live</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -18,24 +18,48 @@
         .controls { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
         select, input, .login-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); color: #fff; padding: 12px; border-radius: 12px; font-size: 16px; outline: none; }
         .login-btn { background: var(--primary-green); font-weight: 600; cursor: pointer; border: none; min-width: 120px; }
+        
+        /* Grid созламалари */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
         .slot { padding: 25px 10px; border-radius: 15px; text-align: center; transition: 0.3s; border: 1px solid transparent; cursor: pointer; }
         .free { background: rgba(46, 204, 113, 0.15); border-color: rgba(46, 204, 113, 0.3); }
-        .booked { background: rgba(231, 76, 60, 0.3); border-color: rgba(231, 76, 60, 0.5); }
+        .booked { background: rgba(231, 76, 60, 0.3); border-color: rgba(231, 76, 60, 0.5); cursor: not-allowed; }
+        .admin-mode .booked { cursor: pointer; border-color: var(--admin-gold); }
         .time { font-size: 24px; font-weight: 800; display: block; }
         .status { font-size: 11px; letter-spacing: 1.5px; opacity: 0.9; text-transform: uppercase; }
         .info { font-size: 12px; margin-top: 10px; color: var(--admin-gold); background: rgba(0,0,0,0.5); border-radius: 8px; padding: 5px; font-weight: 500; }
+
+        /* Модал ойна (Форма) */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid var(--primary-green); width: 90%; max-width: 400px; text-align: center; }
+        .modal-content input { width: 90%; margin-bottom: 15px; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 16px; }
+        .modal-btns { display: flex; gap: 10px; justify-content: center; }
+        .save-btn { background: var(--primary-green); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .cancel-btn { background: #555; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+
         .footer-note { text-align: center; margin-top: 40px; padding: 25px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px dashed var(--glass-border); }
         @media (max-width: 500px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
-<body id="bodyBody">
+<body id="bodyTag">
+
+    <div id="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-top:0">Брон қилиш</h3>
+            <input type="text" id="userName" placeholder="Исмингиз">
+            <input type="tel" id="userPhone" placeholder="Телефон рақамингиз (+998...)">
+            <div class="modal-btns">
+                <button class="save-btn" onclick="confirmBooking()">Тасдиқлаш</button>
+                <button class="cancel-btn" onclick="closeModal()">Бекор қилиш</button>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
         <header>
             <div id="adminBadge" class="admin-badge">⚡ ADMIN REJIM YOQILGAN</div>
             <h2>⚽ OLMALIQ STADION</h2>
-            <p style="opacity: 0.7; font-size: 12px; letter-spacing: 1px; margin-top: 5px;">ЭНГ ЗЎР СТАДИОНЛАРДА ЎЗ ЎРНИНГИЗНИ БАНД ҚИЛИНГ</p>
+            <p style="opacity: 0.7; font-size: 12px; letter-spacing: 1px; margin-top: 5px;">ОНЛАЙН БРОН ҚИЛИШ</p>
         </header>
 
         <div class="controls">
@@ -49,21 +73,20 @@
         <div class="grid" id="scheduleGrid"></div>
 
         <div class="footer-note">
-            <span style="font-size: 14px; opacity: 0.8;">📢 БРОН ҚИЛИШ УЧУН ТЕЛЕФОН:</span><br>
-            <b style="font-size: 22px; color: var(--primary-green); letter-spacing: 1px;">+998 93 793 11 55</b>
+            📢 САВОЛЛАР УЧУН: <br>
+            <b style="font-size: 22px; color: var(--primary-green);">+998 93 793 11 55</b>
         </div>
     </div>
 
     <script>
-        // Firebase созламалари - Сизнинг URL манзилингиз қўйилди
         const firebaseConfig = {
-    databaseURL: "https://olmaliq-stadion-default-rtdb.firebaseio.com/" 
-};
-        
+            databaseURL: "https://olmaliq-stadion-default-rtdb.firebaseio.com/" 
+        };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         let isAdmin = false;
+        let selectedSlot = null;
         const ADMIN_PASSWORD = "1872"; 
 
         document.getElementById('dateSelect').valueAsDate = new Date();
@@ -73,16 +96,42 @@
                 let pass = prompt("Админ паролини киритинг:");
                 if (pass === ADMIN_PASSWORD) {
                     isAdmin = true;
+                    document.getElementById('bodyTag').classList.add('admin-mode');
                     document.getElementById('adminBadge').style.display = "inline-block";
                     document.getElementById('authBtn').innerText = "🚪 Чиқиш";
-                    alert("Хуш келибсиз, Админ!");
                 } else { alert("Парол хато!"); }
             } else {
                 isAdmin = false;
+                document.getElementById('bodyTag').classList.remove('admin-mode');
                 document.getElementById('adminBadge').style.display = "none";
                 document.getElementById('authBtn').innerText = "🔑 Админ";
             }
             loadSchedule();
+        }
+
+        function openModal(stadium, date, time) {
+            selectedSlot = { stadium, date, time };
+            document.getElementById('modalTitle').innerText = time + " учун брон";
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('userName').value = '';
+            document.getElementById('userPhone').value = '';
+        }
+
+        function confirmBooking() {
+            const name = document.getElementById('userName').value;
+            const phone = document.getElementById('userPhone').value;
+            if (name && phone) {
+                const key = selectedSlot.time.replace(':', '_');
+                database.ref(`bookings/${selectedSlot.stadium}/${selectedSlot.date}/${key}`).set(`${name} (${phone})`);
+                closeModal();
+                alert("Муваффақиятли банд қилинди!");
+            } else {
+                alert("Илтимос, барча майдонларни тўлдиринг!");
+            }
         }
 
         function loadSchedule() {
@@ -92,7 +141,6 @@
             if (!date) return;
             grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; opacity:0.5;">Юкланмоқда...</p>';
 
-            // Firebase'дан реал вақтда маълумот олиш
             database.ref(`bookings/${stadium}/${date}`).on('value', (snapshot) => {
                 grid.innerHTML = '';
                 const data = snapshot.val() || {};
@@ -105,18 +153,19 @@
                     div.className = 'slot ' + (info ? 'booked' : 'free');
                     div.innerHTML = `<span class="time">${time}</span>
                                      <span class="status">${info ? '● БАНД' : '○ БЎШ'}</span>
-                                     ${info ? `<div class="info">👤 ${isAdmin ? info : '---'}</div>` : ''}`;
+                                     ${info ? `<div class="info">👤 ${info}</div>` : ''}`;
 
                     div.onclick = () => {
                         if (isAdmin) {
                             if (info) {
                                 if(confirm(time + " бронни бекор қиламизми?")) database.ref(`bookings/${stadium}/${date}/${key}`).remove();
                             } else {
-                                let name = prompt(time + " га кимнинг исмини ёзамиз?");
-                                if(name) database.ref(`bookings/${stadium}/${date}/${key}`).set(name);
+                                openModal(stadium, date, time);
                             }
                         } else if (!info) {
-                            alert("Ушбу вақт бўш. Брон қилиш учун: +998 93 793 11 55");
+                            openModal(stadium, date, time);
+                        } else {
+                            alert("Бу вақт банд!");
                         }
                     };
                     grid.appendChild(div);
@@ -127,4 +176,3 @@
     </script>
 </body>
 </html>
-
